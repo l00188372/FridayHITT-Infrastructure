@@ -25,7 +25,7 @@
 
 ## Internet Gateway
 
-** InternetGateway**: Allows internet access for VPCs
+**InternetGateway**: Allows internet access for VPCs
 
 
 ## Conclusion
