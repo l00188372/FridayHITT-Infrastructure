@@ -7,10 +7,10 @@
 ## VPCs
 
 - **BstEuVPC VPC**: This is the Bastion VPC located in Ireland (EU). It will host all bastion servers in Europe, providing secure access to private resources.
-    - CIDR Block: '10.1.0.0/16'
+    - CIDR Block: `10.1.0.0/16`
 
 - **ProdEuVPC VPC EU**: This VPC is designated for production resources, ensuring secure and scalable hosting for applications.
-    -CIDR Block: '10.2.0.0/16'
+    - CIDR Block: `10.2.0.0/16`
 
 #### Production Subnets
 
