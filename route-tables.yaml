@@ -1,7 +1,6 @@
 ---
 Resources:
 #Private route table 
-
   BastionEUPrivateRTB:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -57,27 +56,39 @@ Resources:
 
   BastionEUPrivateRTBPrivateSubnet1a:
     Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: 
+    - BastionEUPrivateRTB
+    - BastionPrivateSubnet1a
     Properties:
-      RouteTableId: BastionEUPrivateRTB
-      SubnetId: BastionPrivateSubnet1a
+      RouteTableId: !Ref BastionEUPrivateRTB
+      SubnetId: !Ref BastionPrivateSubnet1a
 
   BastionEUPrivateRTBPrivateSubnet1b:
     Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: 
+    - BastionEUPrivateRTB
+    - BastionPrivateSubnet1b
     Properties:
-      RouteTableId: BastionEUPrivateRTB
-      SubnetId: BastionPrivateSubnet1b
+      RouteTableId: !Ref BastionEUPrivateRTB
+      SubnetId: !Ref BastionPrivateSubnet1b
 
   BastionEUPublicRTBPublicSubnet1a:
     Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: 
+    - BastionEUPublicRTB
+    - BastionPublicSubnet1a
     Properties:
-      RouteTableId: BastionEUPublicRTB
-      SubnetId: BastionPublicSubnet1a   
+      RouteTableId: !Ref BastionEUPublicRTB
+      SubnetId: !Ref BastionPublicSubnet1a   
 
   BastionEUPublicRTBPublicSubnet1b:
     Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: 
+    - BastionEUPublicRTB
+    - BastionPublicSubnet1b
     Properties:
-      RouteTableId: BastionEUPublicRTB
-      SubnetId: BastionPublicSubnet1b   
+      RouteTableId: !Ref BastionEUPublicRTB
+      SubnetId: !Ref BastionPublicSubnet1b   
 
 ######
 # Production 
@@ -85,26 +96,36 @@ Resources:
 
   ProdEUPrivateRTBPrivateSubnet1a:
     Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: 
+    - ProductionEUPrivateRTB
+    - ProductionPrivateSubnet1a
     Properties:
-      RouteTableId: ProductionEUPrivateRTB
-      SubnetId: ProductionPrivateSubnet1a
+      RouteTableId: !Ref ProductionEUPrivateRTB
+      SubnetId: !Ref ProductionPrivateSubnet1a
 
   ProdEUPrivateRTBPrivateSubnet1b:
     Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: 
+    - ProductionEUPrivateRTB
+    - ProductionPrivateSubnet1b    
     Properties:
-      RouteTableId: ProductionEUPrivateRTB
-      SubnetId: ProductionPrivateSubnet1b
+      RouteTableId: !Ref ProductionEUPrivateRTB
+      SubnetId: !Ref ProductionPrivateSubnet1b
 
   ProdEUPublicRTBPublicSubnet1a:
     Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: 
+    - ProductionEUPublicRTB
+    - ProductionPublicSubnet1a   
     Properties:
-      RouteTableId: ProductionEUPublicRTB
-      SubnetId: ProductionPublicSubnet1a
+      RouteTableId: !Ref ProductionEUPublicRTB
+      SubnetId: !Ref ProductionPublicSubnet1a
 
   ProdEUPublicRTBPublicSubnet1b:
     Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: 
+    - ProductionEUPublicRTB
+    - ProductionPublicSubnet1b   
     Properties:
-      RouteTableId: ProductionEUPublicRTB
-      SubnetId: ProductionPublicSubnet1b
-
-
+      RouteTableId: !Ref ProductionEUPublicRTB
+      SubnetId: !Ref ProductionPublicSubnet1b
