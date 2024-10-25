@@ -2,7 +2,10 @@
 
 # Overview
 
+This template provisions a multi-tier architecture in AWS EU (West-1), creating separate VPCs for Bastion and Production environments with subnets, routing, and EC2 instances.
+
 # Resources
+
 
 ## VPCs
 
@@ -31,6 +34,18 @@
 - **Public**: 
   - `ProductionPublicSubnet1a`: `10.10.2.128/26` (eu-west-1a)
   - `ProductionPublicSubnet1b`: `10.10.2.192/26` (eu-west-1b)
+
+
+#### Security Groups
+
+  -  SGbstjumpbox: SSH access to Bastion from a specific IP.
+  -  SGEUProdWebServer: HTTPS and SSH access in Production.
+  -  SGEUProdMariaDB: MySQL access from web server and SSH from jump box.
+
+#### EC2 Instances
+  - BstJumpServerInstance: Bastion EC2 instance in the Bastion VPC.
+  - ProdWebServerInstance: Web server in Production VPC.
+  - ProdSQLServerInstance: Database instance in Production’s private subnet
 
 
 ## Internet Gateway
