@@ -1,3 +1,28 @@
+---
+Parameters:
+  InstanceTypeParameter:
+    Type: String
+    Default: t2.micro
+    Description: "EC2 instance type"
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+    ConstraintDescription: "must be a valid EC2 instance type."
+
+  AMIName:
+    Type: String
+    Default: Ubuntu2404
+    Description: "Select the AMI by name for the instance."
+    AllowedValues:
+      - Ubuntu2404
+    ConstraintDescription: "Must be a valid AMI name from the options."
+
+Mappings:
+  AMIMap:
+    Ubuntu2404:
+      euwest1: "ami-0d64bb532e0502c46"
+
 
 Resources:
 
@@ -381,3 +406,144 @@ Resources:
       RouteTableId: !Ref ProductionEUPublicRTB
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGatewayProduction
+
+
+# Security Group
+
+  SGbstjumpbox:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn:
+    - BstEuVPC
+    Properties:
+      GroupDescription: Security Group for Jump Box allowing SSH access from a specific IP
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 87.198.109.106/32
+      SecurityGroupEgress:
+        - IpProtocol: -1 
+          FromPort: -1  
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+      VpcId: !Ref BstEuVPC 
+      Tags:
+        - Key: "Name"
+          Value: "SGbstjumpbox"
+  
+  SGEUProdWebServer:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn:
+    - ProdEuVPC
+    - SGbstjumpbox
+    Properties:
+      GroupDescription: Security Group for Web Server allowing HTTPS access and SSH from jump box
+      VpcId: !Ref ProdEuVPC  
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0    # Allows HTTPS access from any IP
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !Ref SGbstjumpbox  # Allows SSH from Jump Box
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0    # Allows all outbound traffic
+      Tags:
+        - Key: "Name"
+          Value: "SGbstjumpbox"
+
+  SGEUProdMariaDB:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn:
+    - ProdEuVPC
+    - SGEUProdWebServer
+    - SGbstjumpbox
+    Properties:
+      GroupDescription: Security Group for MariaDB Database allowing MySQL access from Web Server and SSH from jump box
+      VpcId: !Ref ProdEuVPC  
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref SGEUProdWebServer  # Allows traffic from the Web Server
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !Ref SGbstjumpbox # Allows SSH from Jump Box
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: "Name"
+          Value: "SGbstjumpbox"
+
+###############
+# EC2 Instances
+###############
+
+
+
+  BstJumpServerInstance:
+    Type: AWS::EC2::Instance
+    DependsOn:
+    - SGEUProdWebServer
+    - SGbstjumpbox
+    Properties:
+      InstanceType: !Ref InstanceTypeParameter
+      SubnetId: !Ref BastionPublicSubnet1a
+      SecurityGroupIds:
+        - !Ref SGbstjumpbox
+      ImageId:  !FindInMap
+        - AMIMap
+        - !Ref AMIName
+        - euwest1
+      Tags:
+        - Key: Name
+          Value: fh-eu-bst-jump-01
+
+
+
+  ProdWebServerInstance:
+    Type: AWS::EC2::Instance
+    DependsOn:
+    - SGEUProdWebServer
+    - ProductionPublicSubnet1a
+    Properties:
+      InstanceType: !Ref InstanceTypeParameter
+      SubnetId: !Ref ProductionPublicSubnet1a
+      SecurityGroupIds:
+        - !Ref SGEUProdWebServer
+      ImageId: !FindInMap
+        - AMIMap
+        - !Ref AMIName
+        - euwest1
+      Tags:
+        - Key: Name
+          Value: fh-eu-prd-web-01
+
+
+  ProdSQLServerInstance:
+    Type: AWS::EC2::Instance
+    DependsOn:
+    - SGEUProdMariaDB
+    - ProductionPrivateSubnet1a
+    Properties:
+      InstanceType: !Ref InstanceTypeParameter
+      SubnetId: !Ref ProductionPrivateSubnet1a
+      SecurityGroupIds:
+        - !Ref SGEUProdMariaDB
+      ImageId: !FindInMap
+        - AMIMap
+        - !Ref AMIName
+        - euwest1
+      Tags:
+        - Key: Name
+          Value: fh-eu-prd-sql-01
+
