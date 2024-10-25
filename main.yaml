@@ -1,0 +1,383 @@
+
+Resources:
+
+
+##
+# Internet Gateway
+##
+
+  InternetGatewayBastion:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: fh-eu-bst-igw
+          
+  InternetGatewayAttachmentBastion:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties: 
+      VpcId: !Ref BstEuVPC
+      InternetGatewayId: !Ref InternetGatewayBastion  
+
+  InternetGatewayProduction:
+   Type: AWS::EC2::InternetGateway
+   Properties:
+      Tags:
+        - Key: Name
+          Value: fh-eu-prod-igw
+
+
+  InternetGatewayAttachmentProduction:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties: 
+      VpcId: !Ref ProdEuVPC
+      InternetGatewayId: !Ref InternetGatewayProduction
+
+######
+# VPCs
+#####
+
+  BstEuVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.10.1.0/24
+      EnableDnsSupport: 'True'
+      EnableDnsHostnames: 'True'
+      Tags:
+        - Key: Name
+          Value: fh-eu-bst
+    DeletionPolicy: Delete
+
+    
+
+  ProdEuVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.10.2.0/24
+      EnableDnsSupport: 'True'
+      EnableDnsHostnames: 'True'
+      Tags:
+        - Key: Name
+          Value: fh-eu-prod
+    DeletionPolicy: Delete
+
+########
+# private and public subnets
+########
+
+  BastionPrivateSubnet1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref BstEuVPC
+      CidrBlock: 10.10.1.0/26
+      AvailabilityZone: "eu-west-1a"
+      Tags:
+      - Key: stack
+        Value: bastian
+      - Key: Name
+        Value: fh-bst-private1-subnet-eu-west-1a
+
+
+  BastionPrivateSubnet1b:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref BstEuVPC
+      CidrBlock: 10.10.1.64/26
+      AvailabilityZone: "eu-west-1b"
+      Tags:
+      - Key: stack
+        Value: bastian
+      - Key: Name
+        Value: fh-bst-private2-subnet-eu-west-1b
+
+
+  BastionPublicSubnet1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref BstEuVPC
+      CidrBlock: 10.10.1.128/26
+      AvailabilityZone: "eu-west-1a"
+      MapPublicIpOnLaunch: true
+      Tags:
+       - Key: stack
+         Value: bastian
+       - Key: Name
+         Value: fh-bst-public1-subnet-eu-west-1a
+
+  BastionPublicSubnet1b:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref BstEuVPC
+      CidrBlock: 10.10.1.192/26
+      AvailabilityZone: "eu-west-1b"
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: stack
+        Value: bastian
+      - Key: Name
+        Value: fh-bst-public2-subnet-eu-west-1b
+
+######
+# Production Subnet
+###
+  ProductionPrivateSubnet1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref ProdEuVPC
+      CidrBlock: 10.10.2.0/26
+      AvailabilityZone: "eu-west-1a"
+      Tags:
+      - Key: stack
+        Value: Production
+      - Key: Name
+        Value: fh-prod-private1-subnet-eu-west-1a
+
+  ProductionPrivateSubnet1b:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref ProdEuVPC
+      CidrBlock: 10.10.2.64/26
+      AvailabilityZone: "eu-west-1b"
+      Tags:
+      - Key: stack
+        Value: Production
+      - Key: Name
+        Value: fh-prod-private2-subnet-eu-west-1b
+
+
+  ProductionPublicSubnet1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref ProdEuVPC
+      CidrBlock: 10.10.2.128/26
+      AvailabilityZone: "eu-west-1a"
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: stack
+        Value: Production
+      - Key: Name
+        Value: fh-prod-public1-subnet-eu-west-1a
+
+  ProductionPublicSubnet1b:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref ProdEuVPC
+      CidrBlock: 10.10.2.192/26
+      AvailabilityZone: "eu-west-1b"
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: stack
+        Value: Production
+      - Key: Name
+        Value: fh-prod-public2-subnet-eu-west-1b
+
+#Private route table 
+  BastionEUPrivateRTB:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:  
+        Ref: BstEuVPC
+      Tags:
+      - Key: stack
+        Value: production
+      - Key: Name
+        Value: fh-bst-eu-private-rtb
+
+  ProductionEUPrivateRTB:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:  
+        Ref: ProdEuVPC
+      Tags:
+      - Key: stack
+        Value: production
+      - Key: Name
+        Value: fh-prod-eu-private-rtb
+
+#Public route table
+
+  BastionEUPublicRTB:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:  
+        Ref: BstEuVPC
+      Tags:
+      - Key: stack
+        Value: production
+      - Key: Name
+        Value: fh-bst-eu-public-rtb
+
+  ProductionEUPublicRTB:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:  
+        Ref: ProdEuVPC
+      Tags:
+      - Key: stack
+        Value: production
+      - Key: Name
+        Value: fh-prod-eu-public-rtb
+
+
+#association route table with subnet
+
+######
+# bst
+#####
+
+  BastionEUPrivateRTBPrivateSubnet1a:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: 
+    - BastionEUPrivateRTB
+    - BastionPrivateSubnet1a
+    Properties:
+      RouteTableId: !Ref BastionEUPrivateRTB
+      SubnetId: !Ref BastionPrivateSubnet1a
+
+  BastionEUPrivateRTBPrivateSubnet1b:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: 
+    - BastionEUPrivateRTB
+    - BastionPrivateSubnet1b
+    Properties:
+      RouteTableId: !Ref BastionEUPrivateRTB
+      SubnetId: !Ref BastionPrivateSubnet1b
+
+  BastionEUPublicRTBPublicSubnet1a:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: 
+    - BastionEUPublicRTB
+    - BastionPublicSubnet1a
+    Properties:
+      RouteTableId: !Ref BastionEUPublicRTB
+      SubnetId: !Ref BastionPublicSubnet1a   
+
+  BastionEUPublicRTBPublicSubnet1b:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: 
+    - BastionEUPublicRTB
+    - BastionPublicSubnet1b
+    Properties:
+      RouteTableId: !Ref BastionEUPublicRTB
+      SubnetId: !Ref BastionPublicSubnet1b   
+
+######
+# Production 
+###
+
+  ProdEUPrivateRTBPrivateSubnet1a:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: 
+    - ProductionEUPrivateRTB
+    - ProductionPrivateSubnet1a
+    Properties:
+      RouteTableId: !Ref ProductionEUPrivateRTB
+      SubnetId: !Ref ProductionPrivateSubnet1a
+
+  ProdEUPrivateRTBPrivateSubnet1b:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: 
+    - ProductionEUPrivateRTB
+    - ProductionPrivateSubnet1b    
+    Properties:
+      RouteTableId: !Ref ProductionEUPrivateRTB
+      SubnetId: !Ref ProductionPrivateSubnet1b
+
+  ProdEUPublicRTBPublicSubnet1a:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: 
+    - ProductionEUPublicRTB
+    - ProductionPublicSubnet1a   
+    Properties:
+      RouteTableId: !Ref ProductionEUPublicRTB
+      SubnetId: !Ref ProductionPublicSubnet1a
+
+  ProdEUPublicRTBPublicSubnet1b:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: 
+    - ProductionEUPublicRTB
+    - ProductionPublicSubnet1b   
+    Properties:
+      RouteTableId: !Ref ProductionEUPublicRTB
+      SubnetId: !Ref ProductionPublicSubnet1b
+
+# VPC Peering Connection
+
+  VPCPeeringBstEuProd:
+    Type: AWS::EC2::VPCPeeringConnection
+    Properties:
+      VpcId: !Ref BstEuVPC
+      PeerVpcId: !Ref ProdEuVPC
+      PeerRegion: !Ref "AWS::Region"
+      Tags:
+        - Key: "Name"
+          Value: "BstEuVPC-ProdEuVPC-Peering"
+
+#Route tables route bastion to EU PROD
+
+  PriBstEuVPCtoProdEuVPCa:
+    Type: AWS::EC2::Route
+    DependsOn: 
+    - BastionEUPrivateRTB
+    - VPCPeeringBstEuProd
+    Properties:
+      RouteTableId: !Ref BastionEUPrivateRTB
+      DestinationCidrBlock: 10.10.2.0/24
+      VpcPeeringConnectionId: !Ref VPCPeeringBstEuProd
+
+
+  PubBstEuVPCtoProdEuVPCb:
+    Type: AWS::EC2::Route
+    DependsOn: 
+    - BastionEUPublicRTB
+    - VPCPeeringBstEuProd
+    Properties:
+      RouteTableId: !Ref BastionEUPublicRTB
+      DestinationCidrBlock: 10.10.2.0/24
+      VpcPeeringConnectionId: !Ref VPCPeeringBstEuProd  
+
+  PubBstVPCToIgw:
+    Type: AWS::EC2::Route
+    DependsOn:
+    - BastionEUPublicRTB
+    - InternetGatewayBastion
+    Properties:
+      RouteTableId: !Ref BastionEUPublicRTB
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGatewayBastion
+
+
+
+#Route tables route EU PROD to Bastion
+
+  PriProdEuVPCtoBstEuVPC:
+    Type: AWS::EC2::Route
+    DependsOn: 
+    - ProductionEUPrivateRTB
+    - VPCPeeringBstEuProd
+    Properties:
+      RouteTableId: !Ref ProductionEUPrivateRTB
+      DestinationCidrBlock: 10.10.1.0/24
+      VpcPeeringConnectionId: !Ref VPCPeeringBstEuProd
+
+
+  PubProdEuVPCtoBstEuVPC:
+    Type: AWS::EC2::Route
+    DependsOn:
+    - ProductionEUPublicRTB
+    - VPCPeeringBstEuProd
+    Properties:
+      RouteTableId: !Ref ProductionEUPublicRTB
+      DestinationCidrBlock: 10.10.1.0/24
+      VpcPeeringConnectionId: !Ref VPCPeeringBstEuProd
+
+
+  PubProdEuVPCToIgw:
+    Type: AWS::EC2::Route
+    DependsOn:
+    - ProductionEUPublicRTB
+    - InternetGatewayProduction
+    Properties:
+      RouteTableId: !Ref ProductionEUPublicRTB
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGatewayProduction
